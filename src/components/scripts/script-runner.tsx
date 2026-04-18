@@ -1,14 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { ChevronLeft, CircleCheckBig, RefreshCcw, Workflow } from "lucide-react";
+import {
+  X,
+  ChevronLeft,
+  ChevronRight,
+  RotateCcw,
+  CheckCircle2,
+  Clock,
+  MessageSquare,
+  Pencil,
+} from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
 type RunOption = {
@@ -45,60 +50,42 @@ type ScriptRunnerProps = {
   script: RunnableScript;
 };
 
+function formatTime(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+}
+
 export function ScriptRunner({ script }: ScriptRunnerProps) {
   const [currentStepId, setCurrentStepId] = useState<string | null>(
-    script.startStepId,
+    script.startStepId
   );
   const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [elapsedTime, setElapsedTime] = useState(0);
+  const [showHistory, setShowHistory] = useState(false);
 
   const stepMap = Object.fromEntries(
-    script.steps.map((step) => [step.id, step] as const),
+    script.steps.map((step) => [step.id, step] as const)
   );
   const currentStep = currentStepId ? stepMap[currentStepId] : undefined;
+  const isEndpoint = currentStep && currentStep.options.length === 0;
 
+  // Timer
   useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.altKey || event.ctrlKey || event.metaKey) {
-        return;
-      }
+    const interval = setInterval(() => {
+      setElapsedTime((prev) => prev + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
-      const target = event.target as HTMLElement | null;
-      const tagName = target?.tagName;
-
-      if (tagName === "INPUT" || tagName === "TEXTAREA" || target?.isContentEditable) {
-        return;
-      }
-
-      if (!currentStep?.options.length) {
-        return;
-      }
-
-      const pressedNumber = Number.parseInt(event.key, 10);
-
-      if (
-        Number.isNaN(pressedNumber) ||
-        pressedNumber < 1 ||
-        pressedNumber > currentStep.options.length
-      ) {
-        return;
-      }
-
-      event.preventDefault();
-
-      const option = currentStep.options[pressedNumber - 1];
-
-      if (!option) {
-        return;
-      }
-
+  const selectOption = useCallback(
+    (option: RunOption) => {
+      if (!currentStep) return;
       const targetStep = stepMap[option.targetStepId];
+      if (!targetStep) return;
 
-      if (!targetStep) {
-        return;
-      }
-
-      setHistory((previousHistory) => [
-        ...previousHistory,
+      setHistory((prev) => [
+        ...prev,
         {
           stepId: currentStep.id,
           stepName: currentStep.name,
@@ -107,228 +94,248 @@ export function ScriptRunner({ script }: ScriptRunnerProps) {
         },
       ]);
       setCurrentStepId(targetStep.id);
+    },
+    [currentStep, stepMap]
+  );
+
+  const goBack = useCallback(() => {
+    setHistory((prev) => {
+      const lastEntry = prev[prev.length - 1];
+      if (!lastEntry) return prev;
+      setCurrentStepId(lastEntry.stepId);
+      return prev.slice(0, -1);
+    });
+  }, []);
+
+  const restart = useCallback(() => {
+    setHistory([]);
+    setCurrentStepId(script.startStepId);
+    setElapsedTime(0);
+  }, [script.startStepId]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.altKey || event.ctrlKey || event.metaKey) return;
+
+      const target = event.target as HTMLElement | null;
+      const tagName = target?.tagName;
+      if (
+        tagName === "INPUT" ||
+        tagName === "TEXTAREA" ||
+        target?.isContentEditable
+      )
+        return;
+
+      // Arrow left = go back
+      if (event.key === "ArrowLeft" && history.length > 0) {
+        event.preventDefault();
+        goBack();
+        return;
+      }
+
+      // Number keys for options
+      if (!currentStep?.options.length) return;
+      const pressedNumber = Number.parseInt(event.key, 10);
+      if (
+        Number.isNaN(pressedNumber) ||
+        pressedNumber < 1 ||
+        pressedNumber > currentStep.options.length
+      )
+        return;
+
+      event.preventDefault();
+      const option = currentStep.options[pressedNumber - 1];
+      if (option) selectOption(option);
     }
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [currentStep, stepMap]);
-
-  function selectOption(option: RunOption) {
-    if (!currentStep) {
-      return;
-    }
-
-    const targetStep = stepMap[option.targetStepId];
-
-    if (!targetStep) {
-      return;
-    }
-
-    setHistory((previousHistory) => [
-      ...previousHistory,
-      {
-        stepId: currentStep.id,
-        stepName: currentStep.name,
-        optionLabel: option.label,
-        targetStepId: option.targetStepId,
-      },
-    ]);
-    setCurrentStepId(targetStep.id);
-  }
-
-  function goBack() {
-    setHistory((previousHistory) => {
-      const lastEntry = previousHistory[previousHistory.length - 1];
-
-      if (!lastEntry) {
-        return previousHistory;
-      }
-
-      setCurrentStepId(lastEntry.stepId);
-      return previousHistory.slice(0, -1);
-    });
-  }
-
-  function restart() {
-    setHistory([]);
-    setCurrentStepId(script.startStepId);
-  }
+  }, [currentStep, history.length, goBack, selectOption]);
 
   if (!currentStep || !script.startStepId) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Run-Modus nicht verfuegbar</CardTitle>
-          <CardDescription>
-            Dieses Skript hat aktuell keinen gueltigen Startschritt. Bitte oeffne den Editor und pruefe die Verknuepfungen.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      <div className="flex min-h-[60vh] flex-col items-center justify-center text-center">
+        <div className="max-w-md space-y-4">
+          <h2 className="text-xl font-semibold text-foreground">
+            Kein Startschritt definiert
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Dieses Skript hat keinen gueltigen Startschritt. Bitte bearbeite das
+            Skript und lege einen Startpunkt fest.
+          </p>
           <Button asChild>
-            <Link href={`/scripts/${script.id}/edit`}>Zum Editor</Link>
+            <Link href={`/scripts/${script.id}/edit`}>Skript bearbeiten</Link>
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     );
   }
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-      <div className="space-y-6">
-        <Card>
-          <CardHeader className="gap-4">
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="secondary">Live-Run</Badge>
-                  <Badge variant={currentStep.options.length > 0 ? "outline" : "success"}>
-                    {currentStep.options.length > 0 ? "Aktiver Schritt" : "Endpunkt erreicht"}
-                  </Badge>
-                </div>
-                <div>
-                  <CardTitle className="text-2xl">{currentStep.name}</CardTitle>
-                  <CardDescription>
-                    {script.description || "Arbeite dich Schritt fuer Schritt durch das Skript."}
-                  </CardDescription>
-                </div>
-              </div>
+    <div className="fixed inset-0 z-50 flex flex-col bg-background">
+      {/* Top Bar */}
+      <header className="flex h-14 items-center justify-between border-b border-border bg-card px-4">
+        <div className="flex items-center gap-3">
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/scripts">
+              <X className="h-4 w-4" />
+              Beenden
+            </Link>
+          </Button>
+          <span className="text-sm font-medium text-foreground">
+            {script.title}
+          </span>
+        </div>
 
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  disabled={history.length === 0}
-                  onClick={goBack}
-                  type="button"
-                  variant="outline"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                  Zurueck
-                </Button>
-                <Button onClick={restart} type="button" variant="outline">
-                  <RefreshCcw className="h-4 w-4" />
-                  Neustart
-                </Button>
-                <Button asChild variant="ghost">
-                  <Link href={`/scripts/${script.id}/edit`}>Bearbeiten</Link>
-                </Button>
-              </div>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 rounded-md bg-secondary px-3 py-1.5 text-sm font-mono text-muted-foreground">
+            <Clock className="h-3.5 w-3.5" />
+            {formatTime(elapsedTime)}
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowHistory(!showHistory)}
+            className={cn(showHistory && "bg-secondary")}
+          >
+            <MessageSquare className="h-4 w-4" />
+            Verlauf ({history.length})
+          </Button>
+          <Button asChild variant="ghost" size="sm">
+            <Link href={`/scripts/${script.id}/edit`}>
+              <Pencil className="h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      </header>
+
+      <div className="flex flex-1 overflow-hidden">
+        {/* Main Content */}
+        <main className="flex flex-1 flex-col items-center justify-center overflow-y-auto p-8">
+          <div className="w-full max-w-2xl space-y-8">
+            {/* Step Indicator */}
+            <div className="flex items-center justify-center gap-2">
+              {currentStep.speaker && (
+                <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                  {currentStep.speaker}
+                </span>
+              )}
+              <span className="text-sm text-muted-foreground">
+                {currentStep.name}
+              </span>
             </div>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {currentStep.speaker ? (
-              <Badge className="w-fit" variant="secondary">
-                {currentStep.speaker}
-              </Badge>
-            ) : null}
 
-            <div className="rounded-[1.5rem] border border-border/80 bg-secondary/20 p-6">
-              <p className="text-[1.1rem] leading-8 text-foreground">{currentStep.content}</p>
+            {/* Main Script Text */}
+            <div className="text-center">
+              <p className="text-2xl leading-relaxed text-foreground font-medium text-balance">
+                {currentStep.content}
+              </p>
             </div>
 
-            {currentStep.note ? (
-              <div className="rounded-2xl border border-primary/15 bg-primary/6 px-5 py-4 text-sm leading-7 text-muted-foreground">
-                <div className="mb-1 font-semibold text-foreground">Kontext</div>
+            {/* Note */}
+            {currentStep.note && (
+              <div className="rounded-lg border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+                <span className="font-medium text-foreground">Notiz:</span>{" "}
                 {currentStep.note}
               </div>
-            ) : null}
+            )}
 
-            <Separator />
-
-            <div className="space-y-4">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <div className="flex items-center gap-2 text-sm font-semibold">
-                    <Workflow className="h-4 w-4 text-primary" />
-                    Antwortoptionen
-                  </div>
-                  <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                    Du kannst auch die Zifferntasten 1 bis 9 verwenden, solange kein Eingabefeld fokussiert ist.
+            {/* Options or End State */}
+            {isEndpoint ? (
+              <div className="flex flex-col items-center gap-4 pt-4">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-success/10">
+                  <CheckCircle2 className="h-8 w-8 text-success" />
+                </div>
+                <div className="text-center">
+                  <h3 className="text-lg font-medium text-foreground">
+                    Gespraech beendet
+                  </h3>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Dieser Pfad endet hier. Du kannst zurueckgehen oder neu
+                    starten.
                   </p>
                 </div>
-                <Badge variant="outline">{currentStep.options.length} verfuegbar</Badge>
               </div>
+            ) : (
+              <div className="grid gap-3 pt-4">
+                {currentStep.options.map((option, index) => (
+                  <button
+                    key={option.id}
+                    onClick={() => selectOption(option)}
+                    className="group flex w-full items-center gap-4 rounded-xl border border-border bg-card p-4 text-left transition-all hover:border-primary/50 hover:bg-accent/50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background"
+                  >
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-secondary text-sm font-semibold text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                      {index + 1}
+                    </span>
+                    <span className="flex-1 font-medium text-foreground">
+                      {option.label}
+                    </span>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </main>
 
-              {currentStep.options.length > 0 ? (
-                <div className="grid gap-3">
-                  {currentStep.options.map((option, index) => (
-                    <button
-                      key={option.id}
-                      className={cn(
-                        "group flex w-full items-start gap-4 rounded-[1.3rem] border border-border bg-background/80 px-5 py-4 text-left transition-colors hover:border-primary/35 hover:bg-primary/6",
-                      )}
-                      onClick={() => selectOption(option)}
-                      type="button"
-                    >
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 font-semibold text-primary">
-                        {index + 1}
-                      </div>
-                      <div className="space-y-1">
-                        <div className="font-semibold text-foreground">{option.label}</div>
-                        <div className="text-sm text-muted-foreground">
-                          Weiter zu {stepMap[option.targetStepId]?.name || "unbekanntem Schritt"}
-                        </div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="rounded-[1.3rem] border border-[color:var(--success)]/20 bg-[color:var(--success)]/10 px-5 py-5">
-                  <div className="flex items-start gap-3">
-                    <CircleCheckBig className="mt-0.5 h-5 w-5 text-[color:var(--success)]" />
-                    <div>
-                      <div className="font-semibold text-foreground">Dieser Pfad endet hier.</div>
-                      <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                        Nutze bei Bedarf den Zurueck-Button fuer einen alternativen Verlauf oder starte das Skript komplett neu.
-                      </p>
+        {/* History Sidebar */}
+        {showHistory && (
+          <aside className="w-80 shrink-0 border-l border-border bg-card overflow-y-auto">
+            <div className="p-4 border-b border-border">
+              <h3 className="font-medium text-foreground">Call-Verlauf</h3>
+              <p className="text-xs text-muted-foreground mt-1">
+                {history.length} Schritte durchlaufen
+              </p>
+            </div>
+            <div className="p-4 space-y-2">
+              {history.length > 0 ? (
+                history.map((entry, index) => (
+                  <div
+                    key={`${entry.stepId}-${index}`}
+                    className="rounded-lg border border-border bg-secondary/30 p-3"
+                  >
+                    <div className="text-xs text-muted-foreground">
+                      Schritt {index + 1}
+                    </div>
+                    <div className="text-sm font-medium text-foreground mt-1">
+                      {entry.stepName}
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Antwort: {entry.optionLabel}
                     </div>
                   </div>
-                </div>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground py-4 text-center">
+                  Noch keine Schritte durchlaufen
+                </p>
               )}
             </div>
-          </CardContent>
-        </Card>
+          </aside>
+        )}
       </div>
 
-      <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Verlauf</CardTitle>
-            <CardDescription>
-              Bisher gewaehlte Antworten im aktuellen Call.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[360px] pr-3">
-              {history.length > 0 ? (
-                <div className="space-y-3">
-                  {history.map((entry, index) => (
-                    <div
-                      key={`${entry.stepId}-${entry.targetStepId}-${index}`}
-                      className="rounded-2xl border border-border/80 bg-background/70 px-4 py-4"
-                    >
-                      <div className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                        Schritt {index + 1}
-                      </div>
-                      <div className="mt-2 text-sm font-semibold text-foreground">
-                        {entry.stepName}
-                      </div>
-                      <div className="mt-1 text-sm leading-6 text-muted-foreground">
-                        Gewaehlt: {entry.optionLabel}
-                      </div>
-                      <div className="mt-2 text-xs text-muted-foreground">
-                        Weiter zu {stepMap[entry.targetStepId]?.name || "unbekannt"}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="rounded-2xl border border-dashed border-border/80 bg-secondary/25 px-4 py-5 text-sm leading-6 text-muted-foreground">
-                  Noch keine Auswahl getroffen. Der Verlauf baut sich waehrend des Calls automatisch auf.
-                </div>
-              )}
-            </ScrollArea>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Bottom Bar */}
+      <footer className="flex h-16 items-center justify-between border-t border-border bg-card px-4">
+        <Button
+          variant="ghost"
+          onClick={goBack}
+          disabled={history.length === 0}
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Zurueck
+        </Button>
+
+        <div className="text-xs text-muted-foreground">
+          Tastatur: 1-9 fuer Optionen, Pfeil links fuer zurueck
+        </div>
+
+        <Button variant="ghost" onClick={restart}>
+          <RotateCcw className="h-4 w-4" />
+          Neustart
+        </Button>
+      </footer>
     </div>
   );
 }

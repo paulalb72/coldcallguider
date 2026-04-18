@@ -1,3 +1,4 @@
+import { PhoneCall } from "lucide-react";
 import { redirectIfAuthenticated } from "@/lib/auth";
 
 import { LoginForm } from "./login-form";
@@ -6,39 +7,54 @@ export default async function LoginPage() {
   await redirectIfAuthenticated();
 
   return (
-    <main className="surface-grid flex min-h-screen items-center justify-center px-6 py-10">
-      <div className="w-full max-w-5xl rounded-[2rem] border border-border/60 bg-background/75 p-4 shadow-[0_30px_90px_-50px_rgba(15,23,42,0.55)] backdrop-blur">
-        <div className="grid gap-6 rounded-[1.5rem] border border-border/60 bg-white/60 p-6 lg:grid-cols-[1.2fr_0.8fr] lg:p-8">
-          <section className="hidden flex-col justify-between rounded-[1.25rem] bg-[linear-gradient(140deg,rgba(15,23,42,0.95),rgba(41,72,124,0.88))] p-8 text-slate-50 lg:flex">
-            <div className="space-y-5">
-              <div className="inline-flex w-fit rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.24em] text-slate-200">
-                Guided Sales Calls
-              </div>
-              <div className="space-y-3">
-                <h1 className="max-w-xl text-4xl font-semibold leading-tight">
-                  Klare Call-Fuehrung fuer echte Gespraeche statt Notizzettel-Chaos.
-                </h1>
-                <p className="max-w-lg text-sm leading-7 text-slate-300">
-                  Waehle ein Skript, springe sauber durch Verzweigungen und halte den Verlauf waehrend des Calls jederzeit im Blick.
-                </p>
-              </div>
+    <main className="flex min-h-screen">
+      {/* Left Panel - Branding */}
+      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 bg-sidebar border-r border-sidebar-border">
+        <div className="space-y-6">
+          {/* Logo */}
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <PhoneCall className="h-5 w-5" />
             </div>
-            <div className="grid grid-cols-2 gap-4 text-sm text-slate-200">
-              <div className="rounded-2xl border border-white/10 bg-white/8 p-4">
-                <div className="text-2xl font-semibold text-white">1 Klick</div>
-                <p className="mt-2 leading-6">zur naechsten Antwortoption im Run-Modus.</p>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-white/8 p-4">
-                <div className="text-2xl font-semibold text-white">100%</div>
-                <p className="mt-2 leading-6">freie Struktur fuer eigene Verzweigungen und Skripte.</p>
-              </div>
-            </div>
-          </section>
+            <span className="text-lg font-semibold text-foreground">
+              Cold Call Guide
+            </span>
+          </div>
 
-          <section className="flex items-center justify-center rounded-[1.25rem] bg-background/80 p-3 lg:p-6">
-            <LoginForm />
-          </section>
+          {/* Hero Text */}
+          <div className="mt-16 space-y-4">
+            <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+              Guided Sales Calls
+            </p>
+            <h1 className="text-4xl font-semibold leading-tight text-foreground text-balance">
+              Klare Call-Fuehrung fuer echte Gespraeche statt Notizzettel-Chaos.
+            </h1>
+            <p className="text-base leading-relaxed text-muted-foreground max-w-md">
+              Waehle ein Skript, springe sauber durch Verzweigungen und halte den Verlauf waehrend des Calls jederzeit im Blick.
+            </p>
+          </div>
         </div>
+
+        {/* Stats */}
+        <div className="flex gap-8">
+          <div>
+            <div className="text-3xl font-semibold text-foreground">1 Klick</div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              zur naechsten Antwortoption
+            </p>
+          </div>
+          <div>
+            <div className="text-3xl font-semibold text-foreground">100%</div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              freie Struktur fuer Skripte
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Right Panel - Login Form */}
+      <div className="flex flex-1 items-center justify-center p-8 bg-background">
+        <LoginForm />
       </div>
     </main>
   );
