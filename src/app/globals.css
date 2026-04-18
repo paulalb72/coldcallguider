@@ -1,0 +1,87 @@
+@import "tailwindcss";
+
+:root {
+  --background: oklch(0.987 0.004 247.9);
+  --foreground: oklch(0.214 0.021 253.1);
+  --card: oklch(0.995 0.003 247.9);
+  --card-foreground: oklch(0.214 0.021 253.1);
+  --popover: oklch(0.995 0.003 247.9);
+  --popover-foreground: oklch(0.214 0.021 253.1);
+  --primary: oklch(0.477 0.097 234.6);
+  --primary-foreground: oklch(0.985 0.003 247.9);
+  --secondary: oklch(0.953 0.013 237.8);
+  --secondary-foreground: oklch(0.293 0.031 251.1);
+  --muted: oklch(0.958 0.008 247.9);
+  --muted-foreground: oklch(0.533 0.023 258.3);
+  --accent: oklch(0.915 0.032 217.3);
+  --accent-foreground: oklch(0.293 0.031 251.1);
+  --destructive: oklch(0.613 0.214 24.2);
+  --destructive-foreground: oklch(0.985 0.003 247.9);
+  --border: oklch(0.905 0.014 247.9);
+  --input: oklch(0.905 0.014 247.9);
+  --ring: oklch(0.541 0.102 236.8);
+  --success: oklch(0.655 0.113 164.6);
+  --radius: 1rem;
+}
+
+@theme inline {
+  --font-sans: var(--font-manrope);
+  --font-mono: var(--font-ibm-plex-mono);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-success: var(--success);
+  --radius-sm: calc(var(--radius) - 0.5rem);
+  --radius-md: calc(var(--radius) - 0.25rem);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 0.25rem);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply min-h-screen bg-background text-foreground antialiased;
+    background-image:
+      linear-gradient(to bottom right, color-mix(in oklab, white 74%, var(--accent)) 0%, transparent 38%),
+      radial-gradient(circle at top left, color-mix(in oklab, white 68%, var(--secondary)) 0%, transparent 28%);
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    @apply outline-none;
+  }
+}
+
+@layer utilities {
+  .surface-grid {
+    background-image:
+      linear-gradient(to right, color-mix(in oklab, transparent 70%, var(--border)) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklab, transparent 70%, var(--border)) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+}

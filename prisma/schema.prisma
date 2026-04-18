@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Script {
+  id          String   @id
+  title       String
+  description String?
+  startStepId String?  @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  startStep Step?  @relation("ScriptStartStep", fields: [startStepId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  steps     Step[] @relation("ScriptSteps")
+
+  @@index([updatedAt])
+}
+
+model Step {
+  id        String   @id
+  scriptId  String
+  name      String
+  content   String
+  speaker   String?
+  note      String?
+  position  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  script          Script       @relation("ScriptSteps", fields: [scriptId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  startForScript  Script?      @relation("ScriptStartStep")
+  options         StepOption[] @relation("StepOptions")
+  incomingOptions StepOption[] @relation("StepOptionTargets")
+
+  @@index([scriptId, position])
+}
+
+model StepOption {
+  id           String   @id
+  stepId       String
+  label        String
+  targetStepId String
+  position     Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  step       Step @relation("StepOptions", fields: [stepId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  targetStep Step @relation("StepOptionTargets", fields: [targetStepId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([stepId, position])
+  @@index([targetStepId])
+}
