@@ -210,8 +210,8 @@ export function ScriptRunner({ script }: ScriptRunnerProps) {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Main Content */}
-        <main className="flex flex-1 flex-col items-center justify-center overflow-y-auto p-8">
-          <div className="w-full max-w-2xl space-y-8">
+        <main className="flex flex-1 overflow-y-auto px-8 py-10">
+          <div className="mx-auto flex min-h-full w-full max-w-2xl flex-col justify-center gap-8">
             {/* Step Indicator */}
             <div className="flex items-center justify-center gap-2">
               <span className="text-sm text-muted-foreground">
