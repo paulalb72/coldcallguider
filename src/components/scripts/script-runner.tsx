@@ -221,14 +221,14 @@ export function ScriptRunner({ script }: ScriptRunnerProps) {
 
             {/* Main Script Text */}
             <div className="text-center">
-              <p className="text-2xl leading-relaxed text-foreground font-medium text-balance">
+              <p className="whitespace-pre-wrap break-words text-2xl font-medium leading-relaxed text-foreground">
                 {currentStep.content}
               </p>
             </div>
 
             {/* Note */}
             {currentStep.note && (
-              <div className="rounded-lg border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+              <div className="whitespace-pre-wrap rounded-lg border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
                 <span className="font-medium text-foreground">Notiz:</span>{" "}
                 {currentStep.note}
               </div>
