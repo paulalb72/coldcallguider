@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { PhoneCall, FileText, Plus, LogOut, Settings, ChevronLeft, ChevronRight } from "lucide-react";
+import { PhoneCall, FileText, Plus, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
 import { logoutAction } from "@/app/(protected)/actions";
