@@ -25,8 +25,6 @@ async function main() {
     data: {
       id: scriptId,
       title: "Qualifizierungs-Call",
-      description:
-        "Ein optionales Beispielskript fuer den schnellen Start. Wird nur angelegt, wenn du den Seed bewusst ausfuehrst.",
       startStepId,
       steps: {
         create: [
@@ -35,7 +33,6 @@ async function main() {
             name: "Einstieg",
             content:
               "Hallo {{Name}}, hier ist {{Dein Name}} von {{Firma}}. Hast du gerade zwei Minuten fuer einen kurzen Abgleich?",
-            speaker: "Du",
             position: 0,
             options: {
               create: [
@@ -59,7 +56,6 @@ async function main() {
             name: "Bedarf pruefen",
             content:
               "Viele Teams verlieren Leads, weil Follow-ups uneinheitlich laufen. Wie loest ihr das heute?",
-            speaker: "Du",
             position: 1,
             options: {
               create: [
@@ -83,7 +79,6 @@ async function main() {
             name: "Naechster Schritt",
             content:
               "Das klingt nach einem guten Anlass fuer eine kurze Demo. Sollen wir dafuer direkt einen Termin finden?",
-            speaker: "Du",
             note: "Hier kannst du auf Terminbuchung oder Rueckruf verzweigen.",
             position: 2,
             options: {
@@ -108,7 +103,6 @@ async function main() {
             name: "Rueckruf",
             content:
               "Kein Problem. Wann passt es dir besser fuer einen kurzen Rueckruf?",
-            speaker: "Du",
             position: 3,
           },
           {
@@ -116,7 +110,6 @@ async function main() {
             name: "Freundlicher Abschluss",
             content:
               "Verstanden, danke fuer die offene Rueckmeldung. Ich lasse dir trotzdem gern etwas Material da und melde mich nur bei echtem Mehrwert wieder.",
-            speaker: "Du",
             position: 4,
           },
           {
@@ -124,7 +117,6 @@ async function main() {
             name: "Termin fixiert",
             content:
               "Perfekt, ich bestaetige dir den Termin direkt im Anschluss per Mail.",
-            speaker: "Du",
             position: 5,
           },
         ],

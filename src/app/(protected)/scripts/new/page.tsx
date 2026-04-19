@@ -7,14 +7,12 @@ export default function NewScriptPage() {
 
   const initialScript: EditableScript = {
     title: "",
-    description: "",
     startStepId: stepId,
     steps: [
       {
         id: stepId,
         name: "",
         content: "",
-        speaker: "",
         note: "",
         options: [],
       },

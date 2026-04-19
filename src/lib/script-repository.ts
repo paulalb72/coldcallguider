@@ -5,7 +5,6 @@ import { randomUUID } from "crypto";
 import { Prisma } from "@/generated/prisma/client";
 
 import { prisma } from "@/lib/prisma";
-import { trimToNull } from "@/lib/utils";
 import { scriptPayloadSchema, type ScriptPayload } from "@/lib/validations/script";
 
 const editorInclude = {
@@ -28,7 +27,6 @@ export async function listScripts() {
     select: {
       id: true,
       title: true,
-      description: true,
       updatedAt: true,
       _count: {
         select: {
@@ -50,14 +48,12 @@ export async function getScriptById(id: string) {
 function normalizePayload(payload: ScriptPayload) {
   return {
     title: payload.title.trim(),
-    description: trimToNull(payload.description),
     startStepId: payload.startStepId,
     steps: payload.steps.map((step) => ({
       id: step.id,
       name: step.name.trim(),
       content: step.content.trim(),
-      speaker: trimToNull(step.speaker),
-      note: trimToNull(step.note),
+      note: step.note.trim() || null,
       position: step.position,
       options: step.options.map((option) => ({
         id: option.id,
@@ -136,12 +132,10 @@ export async function saveScript(input: unknown, existingId?: string) {
       create: {
         id: scriptId,
         title: payload.title,
-        description: payload.description,
         startStepId: null,
       },
       update: {
         title: payload.title,
-        description: payload.description,
         startStepId: null,
       },
     });
@@ -186,14 +180,12 @@ export async function saveScript(input: unknown, existingId?: string) {
           scriptId,
           name: step.name,
           content: step.content,
-          speaker: step.speaker,
           note: step.note,
           position: step.position,
         },
         update: {
           name: step.name,
           content: step.content,
-          speaker: step.speaker,
           note: step.note,
           position: step.position,
         },

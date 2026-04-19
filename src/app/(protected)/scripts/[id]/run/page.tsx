@@ -20,13 +20,11 @@ export default async function RunScriptPage({ params }: RunScriptPageProps) {
   const runnableScript: RunnableScript = {
     id: script.id,
     title: script.title,
-    description: script.description,
     startStepId: script.startStepId,
     steps: script.steps.map((step) => ({
       id: step.id,
       name: step.name,
       content: step.content,
-      speaker: step.speaker,
       note: step.note,
       options: step.options.map((option) => ({
         id: option.id,

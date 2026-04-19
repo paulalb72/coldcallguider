@@ -19,7 +19,6 @@ type ScriptCardProps = {
   script: {
     id: string;
     title: string;
-    description: string | null;
     updatedAt: Date;
     _count: {
       steps: number;
@@ -39,9 +38,6 @@ export function ScriptCard({ script }: ScriptCardProps) {
             <h3 className="font-medium text-foreground truncate">
               {script.title}
             </h3>
-            <p className="mt-1 text-sm text-muted-foreground line-clamp-2">
-              {script.description || "Keine Beschreibung"}
-            </p>
           </div>
           
           <DropdownMenu>

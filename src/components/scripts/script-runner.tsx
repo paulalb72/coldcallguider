@@ -26,7 +26,6 @@ type RunStep = {
   id: string;
   name: string;
   content: string;
-  speaker: string | null;
   note: string | null;
   options: RunOption[];
 };
@@ -34,7 +33,6 @@ type RunStep = {
 export type RunnableScript = {
   id: string;
   title: string;
-  description: string | null;
   startStepId: string | null;
   steps: RunStep[];
 };
@@ -216,11 +214,6 @@ export function ScriptRunner({ script }: ScriptRunnerProps) {
           <div className="w-full max-w-2xl space-y-8">
             {/* Step Indicator */}
             <div className="flex items-center justify-center gap-2">
-              {currentStep.speaker && (
-                <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                  {currentStep.speaker}
-                </span>
-              )}
               <span className="text-sm text-muted-foreground">
                 {currentStep.name}
               </span>

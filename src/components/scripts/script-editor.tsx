@@ -47,7 +47,6 @@ type EditorStep = {
   id: string;
   name: string;
   content: string;
-  speaker: string;
   note: string;
   options: EditorOption[];
 };
@@ -55,7 +54,6 @@ type EditorStep = {
 export type EditableScript = {
   id?: string;
   title: string;
-  description: string;
   startStepId: string;
   steps: EditorStep[];
 };
@@ -77,7 +75,6 @@ function createEmptyStep(): EditorStep {
     id: createClientId("step"),
     name: "",
     content: "",
-    speaker: "",
     note: "",
     options: [],
   };
@@ -86,13 +83,11 @@ function createEmptyStep(): EditorStep {
 function toPayload(script: EditableScript) {
   return {
     title: script.title,
-    description: script.description,
     startStepId: script.startStepId,
     steps: script.steps.map((step, stepIndex) => ({
       id: step.id,
       name: step.name,
       content: step.content,
-      speaker: step.speaker,
       note: step.note,
       position: stepIndex,
       options: step.options.map((option, optionIndex) => ({
@@ -315,22 +310,6 @@ export function ScriptEditor({ initialScript, mode }: ScriptEditorProps) {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="script-description" className="text-sm font-medium">
-            Beschreibung
-          </Label>
-          <Textarea
-            id="script-description"
-            value={script.description}
-            onChange={(e) =>
-              updateScript((prev) => ({ ...prev, description: e.target.value }))
-            }
-            placeholder="Wann und wofuer wird dieses Skript verwendet?"
-            rows={2}
-            className="bg-secondary border-border resize-none"
-          />
-        </div>
-
-        <div className="space-y-2">
           <Label className="text-sm font-medium">Startschritt</Label>
           <Select
             value={script.startStepId}
@@ -415,35 +394,19 @@ export function ScriptEditor({ initialScript, mode }: ScriptEditorProps) {
                   {/* Step Content */}
                   <CollapsibleContent>
                     <div className="border-t border-border p-4 space-y-4">
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="space-y-2">
-                          <Label className="text-sm">Name</Label>
-                          <Input
-                            value={step.name}
-                            onChange={(e) =>
-                              updateStep(step.id, (s) => ({
-                                ...s,
-                                name: e.target.value,
-                              }))
-                            }
-                            placeholder="z.B. Begrueszung"
-                            className="bg-secondary border-border"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-sm">Sprecher</Label>
-                          <Input
-                            value={step.speaker}
-                            onChange={(e) =>
-                              updateStep(step.id, (s) => ({
-                                ...s,
-                                speaker: e.target.value,
-                              }))
-                            }
-                            placeholder="Du, Kunde..."
-                            className="bg-secondary border-border"
-                          />
-                        </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm">Name</Label>
+                        <Input
+                          value={step.name}
+                          onChange={(e) =>
+                            updateStep(step.id, (s) => ({
+                              ...s,
+                              name: e.target.value,
+                            }))
+                          }
+                          placeholder="z.B. Begrueszung"
+                          className="bg-secondary border-border"
+                        />
                       </div>
 
                       <div className="space-y-2">

@@ -16,7 +16,6 @@ export const scriptStepSchema = z.object({
   id: requiredText,
   name: requiredText.max(120, "Interne Namen sollten maximal 120 Zeichen haben."),
   content: requiredText.max(4000, "Der Schritttext ist zu lang."),
-  speaker: z.string().max(80, "Die Sprecherrolle ist zu lang.").default(""),
   note: z.string().max(2000, "Die Notiz ist zu lang.").default(""),
   position: z.number().int().nonnegative(),
   options: z.array(scriptOptionSchema),
@@ -25,10 +24,6 @@ export const scriptStepSchema = z.object({
 export const scriptPayloadSchema = z
   .object({
     title: requiredText.max(120, "Der Skriptname ist zu lang."),
-    description: z
-      .string()
-      .max(500, "Die Beschreibung ist zu lang.")
-      .default(""),
     startStepId: requiredText,
     steps: z
       .array(scriptStepSchema)

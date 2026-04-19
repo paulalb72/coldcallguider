@@ -10,7 +10,6 @@ datasource db {
 model Script {
   id          String   @id
   title       String
-  description String?
   startStepId String?  @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -26,7 +25,6 @@ model Step {
   scriptId  String
   name      String
   content   String
-  speaker   String?
   note      String?
   position  Int
   createdAt DateTime @default(now())
